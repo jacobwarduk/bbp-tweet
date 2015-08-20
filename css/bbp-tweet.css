@@ -1,0 +1,48 @@
+a, a:hover, a:active, a:focus {
+    outline: 0;
+}
+
+.tab-pane {
+    padding: 5px;
+    border-color: #dddddd;
+    border-style: solid;
+    border-width: 0px 1px 1px 1px;
+
+}
+
+.stats, .accounts {
+    font-size: 14px;
+    font-weight: 700;
+    color: #959595;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-input {
+    display: block;
+}
+
+.btn-input .btn.form-control {
+    text-align: left;
+}
+
+.btn-input .btn.form-control span:first-child {
+    left: 10px;
+    overflow: hidden;
+    position: absolute;
+    right: 25px;
+}
+
+.btn-input .btn.form-control .caret {
+    margin-top: -1px;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+}
+
+h3.hashtag-header {
+    font-weight: 300;
+    color: #454545;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
