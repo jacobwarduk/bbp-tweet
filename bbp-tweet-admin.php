@@ -1,5 +1,7 @@
 <?php
 
+/*
+
 global $wpdb;
 
 include_once( plugins_url( 'functions/twitter-api.php', __FILE__ ) );
@@ -10,6 +12,8 @@ $forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
 $oauth_settings = $wpdb->get_results( "SELECT * FROM $oauth_settings_table", ARRAY_A );
 $bbp_tweet_topics = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_topics` FROM $forum_settings_table", ARRAY_A );
 $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_replies` FROM $forum_settings_table", ARRAY_A );
+
+*/
 
 ?>
 
