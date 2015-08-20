@@ -116,7 +116,7 @@ add_action( 'bbp_new_topic', 'tweet_new_topic' );   // Tweeting new topic
 add_action( 'bbp_new_reply', 'tweet_new_reply' );   // Tweeting new reply
 
 // Function for tweeting new topics
-function tweet_new_reply( $topic_id, $forum_id, $anonymous_data, $topic_author ) {
+function tweet_new_topic( $topic_id, $forum_id, $anonymous_data, $topic_author ) {
 
     global $wpdb;
 
