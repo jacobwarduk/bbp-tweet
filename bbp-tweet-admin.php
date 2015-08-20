@@ -98,6 +98,7 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 
                         </div>
                     </div>
+                </div>
 
 
                 <div class="row">
