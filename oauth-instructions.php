@@ -44,4 +44,3 @@
     /*
         Instructions and images courtesy of http://www.pontikis.net/blog/auto_post_on_twitter_with_php
     */
-?>

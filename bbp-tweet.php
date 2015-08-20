@@ -55,7 +55,7 @@ function bbp_tweet_admin_init() {
 
     wp_register_script( 'bbp_tweet_bootstap_javascript', plugins_url( 'js/bootstrap.min.js', __FILE__) );
     wp_register_script( 'bbp_tweet_bootstap_select_javascript', plugins_url( 'js/bootstrap-select.min.js', __FILE__) );
-    wp_register_script( 'bbp_tweet_javascript', plugins_url( 'js/hashtag-wizard.js', __FILE__) );
+    wp_register_script( 'bbp_tweet_javascript', plugins_url( 'js/bbp-tweet.js', __FILE__) );
 
     wp_enqueue_script( 'bbp_tweet_bootstap_javascript' );
     wp_enqueue_script( 'bbp_tweet_bootstap_select_javascript' );
@@ -68,7 +68,6 @@ function bbp_tweet_admin_init() {
 
 // Registering activation hooks
 register_activation_hook(__FILE__, 'create_database_tables');	// Creating database tables on plugin load
-
 
 // Function for creating database tables
 function create_database_tables() {
@@ -112,10 +111,12 @@ function create_database_tables() {
     }
 }
 
-// Tweeting new topic
-add_action( 'bbp_new_topic', array( $this, 'tweet_new_topic' ) );
 
-function tweet_new_topic() {
+add_action( 'bbp_new_topic', 'tweet_new_topic' ) );   // Tweeting new topic
+add_action( 'bbp_new_reply', 'tweet_new_reply' ) );   // Tweeting new reply
+
+// Function for tweeting new topics
+function tweet_new_reply( $topic_id, $forum_id, $anonymous_data, $topic_author ) {
 
     global $wpdb;
 
@@ -124,10 +125,8 @@ function tweet_new_topic() {
 
 }
 
-// Tweeting new reply
-add_action( 'bbp_new_reply', array( $this, 'tweet_new_reply' ) );
-
-function tweet_new_reply() {
+// Function for tweeting new replies
+function tweet_new_reply( $reply_id, $topic_id, $forum_id, $anonymous_data, $reply_author ) {
 
     global $wpdb;
 
