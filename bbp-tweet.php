@@ -2,7 +2,7 @@
 
 /*
     Plugin Name: bbp tweet
-    Description: bbPress plugin that tweets new topics and replies.
+    Description: bbPress plugin to tweet new topics and replies. Full stats reporting, including tweets, retweets, favorites and tweet to bbp CTR.
     Author: Jacob Ward
     Version: 1.0.0
     Author URI: http://www.jacobward.co.uk
@@ -66,11 +66,16 @@ function bbp_tweet_admin_init() {
 }
 
 
-// Registering activation hooks
-register_activation_hook(__FILE__, 'create_database_tables');	// Creating database tables on plugin load
+// Registering activation hook
+register_activation_hook(__FILE__, 'on_activation');
 
 // Function for creating database tables
-function create_database_tables() {
+function on_activation() {
+
+    if ( ! class_exists( 'bbPress' ) ) {
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+		wp_die( __( 'Sorry, you need to activate bbPress first.', 'bbpress_notify') );
+	}
 
     global $wpdb;
 

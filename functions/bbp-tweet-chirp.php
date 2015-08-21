@@ -21,7 +21,7 @@
     // Function for creating a new tweet
     function create_tweet( $oauth, $message ) {
 
-        // Retweeting the tweet
+        // Retweeting the tweet - https://dev.twitter.com/rest/reference/post/statuses/update
         $tweet_url = 'https://api.twitter.com/1.1/statuses/update.json';
         $post_fields = array(
             'status' => $message;

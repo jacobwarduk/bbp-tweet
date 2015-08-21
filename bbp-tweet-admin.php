@@ -1,19 +1,36 @@
 <?php
 
-/*
+    global $wpdb;
 
-global $wpdb;
+    $oauth_settings_table = $wpdb->prefix . 'bbp_tweet_oauth_settings';
+    $forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
 
-include_once( plugins_url( 'functions/twitter-api.php', __FILE__ ) );
 
-$oauth_settings_table = $wpdb->prefix . 'bbp_tweet_oauth_settings';
-$forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
+    // Saving new topics and replies settings
+    if ( $_POST['bbp-tweet-save-settings'] == 1 ) {
 
-$oauth_settings = $wpdb->get_results( "SELECT * FROM $oauth_settings_table", ARRAY_A );
-$bbp_tweet_topics = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_topics` FROM $forum_settings_table", ARRAY_A );
-$bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_replies` FROM $forum_settings_table", ARRAY_A );
+        $wpdb->query( "TRUNCATE TABLE $forum_settings_table" );
 
-*/
+        $bbp_tweet_settings_insert = $wpdb->insert( $forum_settings_table, array( 'bbp_tweet_forum_settings_topics' => $_POST['bbp-tweet-topics'], 'bbp_tweet_forum_settings_replies' => $_POST['bbp-tweet-replies'] ), array( '%d' ) );
+
+        if ( $bbp_tweet_settings_insert != false ) {
+            $success = true;
+            $message = 'Your settings were updated.';
+        } else {
+            $success = false;
+            $message = 'There was a problem updating your settings. Please try again.';
+        }
+
+
+    }
+
+    $oauth_settings_results = $wpdb->get_results( "SELECT * FROM $oauth_settings_table", ARRAY_A );
+    $bbp_tweet_topics_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_topics FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
+    $bbp_tweet_replies_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_replies FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
+
+    // var_dump( $oauth_settings_results );
+    $bbp_tweet_topics = $bbp_tweet_topics_results[0]['bbp_tweet_forum_settings_topics'];
+    $bbp_tweet_replies = $bbp_tweet_replies_results[0]['bbp_tweet_forum_settings_replies'];
 
 ?>
 
@@ -22,20 +39,23 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 
     <h3 class="bbp-tweet-header">bbp tweet</h3>
 
-    <?php if ($success === true ) { ?>
-        <div class="alert alert-success fade in" role="alert">
+    <?php if ( isset( $success ) && $success == true ) { ?>
+        <div class="success alert alert-success" role="alert">
+            <a href="#" class="close" data-dismiss="alert"><span class="glyphicon glyphicon-remove"></span></a>
             <p><span class="glyphicon glyphicon-ok-sign"></span> <b>Success: </b>
-                <?php echo $message; ?>
-            </p>
-        </div>
-    <?php } else if ( $success === false ) { ?>
-        <div class="alert alert-danger fade in" role="alert">
-            <p><span class="glyphicon glyphicon-exclamation-sign"></span> <b>Error: </b>
-                <?php if ( $error ) { echo $error; } ?>
+                <span class="message"><?php echo $message; ?></span>
             </p>
         </div>
     <?php } ?>
 
+    <?php if ( isset( $success ) && $success == false ) { ?>
+        <div class="error alert alert-danger" role="alert">
+            <a href="#" class="close" data-dismiss="alert"><span class="glyphicon glyphicon-remove"></span></a>
+            <p><span class="glyphicon glyphicon-exclamation-sign"></span> <b>Error: </b>
+                <span class="message"><?php echo $message; ?></span>
+            </p>
+        </div>
+    <?php } ?>
 
 
     <?php if ( $oauth_settings[0]['bbp_tweet_oauth_account_name'] == '' || $oauth_settings[0]['bbp_tweet_oauth_consumer_key'] == '' || $oauth_settings[0]['bbp_tweet_oauth_consumer_secret'] == '' || $oauth_settings[0]['bbp_tweet_oauth_access_token'] == '' || $oauth_settings[0]['bbp_tweet_oauth_access_token_secret'] == '') { ?>
@@ -66,7 +86,7 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
                 <a href="#" aria-controls="accounts" role="tab"  data-toggle="dropdown" class="dropdown-toggle"><span class="glyphicon glyphicon-user"></span> Accounts</a>
                 <ul class="dropdown-menu">
                     <?php
-                        foreach ($oAuth as $key => $value ) {
+                        foreach ($oauth_settings as $key => $value ) {
                     ?>
                         <li class="disabled"><a href="#">@<?php echo $value['bbp_tweet_oauth_account_name']; ?></a></li>
                     <?php
@@ -90,7 +110,6 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 
                 <div class="row">
                     <div class="col-md-12">
-
                         <div class="panel panel-default">
                             <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-tasks"></span> Activity</span></div>
 
@@ -102,12 +121,13 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 
 
                 <div class="row">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-stats"></span> Stats</span></div>
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-stats"></span> Stats</span></div>
 
-                        <p style="padding: 10px;">Possible future extension?</p>
+                            <p style="padding: 10px;">Possible future extension?</p>
+                        </div>
                     </div>
-
                 </div>
 
             </div>
@@ -117,20 +137,59 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 
 
             <div role="tabpanel" class="tab-pane" id="settings">
-                <div class="row">
-                    <div class="col-md-12">
-                        <p style="padding-left: 10px;">
-                            <br />
-                            No settings to display. Possible future extension?
-                        </p>
+<br />
+                <form name="bbp-tweet-settings" action="" method="post" id="bbp-tweet-settings">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-edit"></span> Topics</span></div>
+
+                                <div class="form-group">
+
+                                    <div class="checkbox">
+                                        <label for="bbp-tweet-topics">
+                                            <span class="col-md-1"><input type="checkbox" name="bbp-tweet-topics" id="bbp-tweet-topics" value="1" <?php if ( $bbp_tweet_topics == 1 ) { echo 'checked="checked"'; } ?> /></span>
+                                            <span class="col-md-11">Tweet New Topics?</span>
+                                        </label>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-comment"></span> Replies</span></div>
+
+                                <div class="form-group">
+
+                                    <div class="checkbox">
+                                        <label for="bbp-tweet-replies">
+                                            <span class="col-md-1"><input type="checkbox" name="bbp-tweet-replies" id="bbp-tweet-replies" value="1" <?php if ( $bbp_tweet_replies == 1 ) { echo 'checked="checked"'; } ?> /></span>
+                                            <span class="col-md-11">Tweet New Replies?</span>
+                                        </label>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" name="settings-save-button" id="settings-save-button" class="btn btn-success col-md-1 col-md-offset-11">Save</button>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="bbp-tweet-save-settings" value="1" />
+
+                </form>
             </div>
-
-
-
-
-
 
 
             <div role="tabpanel" class="tab-pane" id="accounts">
@@ -144,35 +203,37 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 
 
 
-                            <table class="table" data-toggle="table" data-height="299" style="width: 100%;">
+                            <table class="table table-striped table-bordered table-hover table-condensed" data-toggle="table" data-height="299">
 
-                                <tr>
-                                    <th>ID #</th>
-                                    <th>Account Name</th>
-                                    <th>Manage</th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-
-                                <?php /* foreach ( $oAuth as $key => $value ) { ?>
-
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <?php echo $value['bbp_tweet_oauth_settings_id']; ?>
-                                        </td>
-                                        <td>
-                                            <a href="https://twitter.com/<?php echo $value['bbp_tweet_oauth_account_name']; ?>" target="_BLANK">@<?php echo $value['bbp_tweet_oauth_account_name']; ?></a>
-                                        <td>
-                                            <form name="delete_account" action="" method="POST">
-                                                <input type="hidden" name="delete_account_id" value="<?php echo $value['bbp_tweet_oauth_settings_id']; ?>" />
-                                                <button class="btn btn-danger btn-xs" type="submit">Delete</button>
-                                            </form>
-                                        </td>
+                                        <th>ID #</th>
+                                        <th>Account Name</th>
+                                        <th>Manage</th>
                                     </tr>
+                                </thead>
 
-                                    <?php } */ ?>
+                                <tbody>
+
+                                    <?php foreach ( $oauth_settings as $key => $value ) { ?>
+
+                                        <tr>
+                                            <td>
+                                                <?php echo $value['bbp_tweet_oauth_settings_id']; ?>
+                                            </td>
+                                            <td>
+                                                <a href="https://twitter.com/<?php echo $value['bbp_tweet_oauth_account_name']; ?>" target="_BLANK">@<?php echo $value['bbp_tweet_oauth_account_name']; ?></a>
+                                            <td>
+                                                <form name="oauth_delete_account" id="oauth_delete_account">
+                                                    <input type="hidden" name="delete_account_id" value="<?php echo $value['bbp_tweet_oauth_settings_id']; ?>" />
+                                                    <button class="btn btn-danger btn-xs" type="submit">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+
+                                        <?php } ?>
+
+                                    </tbody>
 
                                 </table>
 
@@ -192,7 +253,7 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 
 
 <!-- ####### OATH SETTINGS MODAL CONTENT ####### -->
-<form name="oauth_settings_form" id="oauth_settings_form" method="POST" action="">
+<form name="oauth_settings_form" id="oauth_settings_form">
     <div class="modal fade" id="oAuthSettingsModal" tabindex="-1" role="dialog" aria-labelledby="oAuthSettingsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -240,7 +301,7 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
                             <input type="hidden" name="oauth_settings_form_submit" value="true" />
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" id="oauth_save_button" data-loading-text="Saving..." class="btn btn-primary" autocomplete="off">Save</button>
+                            <button type="submit" id="oauth-save-button"  class="btn btn-primary">Save</button>
                         </div>
 
                     </div>
@@ -319,5 +380,7 @@ $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_repli
 <!-- ####### // OATH INSTRUCTIONS MODAL CONTENT ####### -->
 
 </div>
+
+<div style="clear: both;"></div>
 
 <!-- ####### // FIN ####### -->

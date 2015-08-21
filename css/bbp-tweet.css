@@ -10,7 +10,9 @@ a, a:hover, a:active, a:focus {
 
 }
 
-.stats, .accounts {
+.stats,
+.settings,
+.accounts {
     font-size: 14px;
     font-weight: 700;
     color: #959595;
@@ -41,7 +43,7 @@ a, a:hover, a:active, a:focus {
 }
 
 h3.bbp-tweet-header {
-    font-weight: 300;
+    font-weight: bold;
     color: #454545;
     text-transform: uppercase;
     letter-spacing: 1px;
