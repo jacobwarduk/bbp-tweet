@@ -2,13 +2,14 @@
 
     global $wpdb;
 
-    include_once( plugins_url( 'functions/twitter-api.php', __FILE__ ) );
+    include_once( plugin_dir_path( __FILE__ ) . 'functions/twitter-api.php' );
 
     $oauth_settings_table = $wpdb->prefix . 'bbp_tweet_oauth_settings';
     $forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
 
     // Saving new OAuth account
     if ( $_POST['oauth-save-settings'] == true ) {
+
 
         $bbp_tweet_oauth_consumer_key = stripslashes( filter_var( $_POST['bbp_tweet_oauth_consumer_key'], FILTER_SANITIZE_STRING ) );
         $bbp_tweet_oauth_consumer_secret = stripslashes( filter_var( $_POST['bbp_tweet_oauth_consumer_secret'], FILTER_SANITIZE_STRING ) );
@@ -36,8 +37,7 @@
 
         $bpp_tweet_oauth_account_name = $account_data->screen_name;  // GET ACCOUNT NAME FROM https://api.twitter.com/1.1/account/settings.json
 
-
-        if ( isset( $bpp_tweet_oauth_account_name ) && $bbp_tweet_oauth_account_name != '' ) {
+         if ( isset( $bpp_tweet_oauth_account_name ) && $bpp_tweet_oauth_account_name != '' ) {
             $wpdb->insert(
                 $oauth_settings_table,
                 array(
@@ -50,9 +50,9 @@
                 '%s'
             );
 
-            if ( $wpdb->insert_id !== false ) {
+            if ( $wpdb->insert_id != false ) {
                 $success = true;
-                $message = 'Successfully saved your oAuth credentials';
+                $message = 'Your oAuth credentials have been saved.';
             } else {
                 $success = false;
                 $message = 'There was an error saving your oAuth details. Please Try again.';
@@ -60,7 +60,7 @@
 
         } else {
             $success = false;
-            $error = 'There was an error retrieving your account details. Please Try again.';
+            $message = 'There was an error retrieving your account details. Please Try again.';
         }
 
     }
@@ -88,6 +88,24 @@
             $message = 'There was a problem updating your settings. Please try again.';
         }
 
+    }
+
+    // Deleting account
+    if ( isset( $_POST['delete_account_id'] ) ) {
+
+        $account_deleted = $wpdb->delete( $oauth_settings_table, array(
+                'bbp_tweet_oauth_settings_id' => $_POST['delete_account_id'],
+                ),
+            array('%d')
+        );
+
+        if ( $account_deleted != false )  {
+            $success = true;
+            $message = 'Deleted account ID: ' . $_POST['delete_account_id'];
+        } else {
+            $success = false;
+            $message = 'There was an problem deleting your account. Please Try again.';
+        }
 
     }
 
@@ -99,6 +117,7 @@
     $bbp_tweet_topics = $bbp_tweet_topics_results[0]['bbp_tweet_forum_settings_topics'];
     $bbp_tweet_replies = $bbp_tweet_replies_results[0]['bbp_tweet_forum_settings_replies'];
 
+
 ?>
 
 <!-- ####### START ####### -->
@@ -109,7 +128,8 @@
     <?php if ( isset( $success ) && $success == true ) { ?>
         <div class="success alert alert-success" role="alert">
             <a href="#" class="close" data-dismiss="alert"><span class="glyphicon glyphicon-remove"></span></a>
-            <p><span class="glyphicon glyphicon-ok-sign"></span> <b>Success: </b>
+            <p>
+                <span class="glyphicon glyphicon-ok-sign"></span> <b>Success: </b>
                 <span class="message"><?php echo $message; ?></span>
             </p>
         </div>
@@ -118,14 +138,15 @@
     <?php if ( isset( $success ) && $success == false ) { ?>
         <div class="error alert alert-danger" role="alert">
             <a href="#" class="close" data-dismiss="alert"><span class="glyphicon glyphicon-remove"></span></a>
-            <p><span class="glyphicon glyphicon-exclamation-sign"></span> <b>Error: </b>
+            <p>
+                <span class="glyphicon glyphicon-exclamation-sign"></span> <b>Error: </b>
                 <span class="message"><?php echo $message; ?></span>
             </p>
         </div>
     <?php } ?>
 
 
-    <?php if ( $oauth_settings[0]['bbp_tweet_oauth_account_name'] == '' || $oauth_settings[0]['bbp_tweet_oauth_consumer_key'] == '' || $oauth_settings[0]['bbp_tweet_oauth_consumer_secret'] == '' || $oauth_settings[0]['bbp_tweet_oauth_access_token'] == '' || $oauth_settings[0]['bbp_tweet_oauth_access_token_secret'] == '') { ?>
+    <?php if ( $oauth_settings_results[0]['bbp_tweet_oauth_account_name'] == '' || $oauth_settings_results[0]['bbp_tweet_oauth_consumer_key'] == '' || $oauth_settings_results[0]['bbp_tweet_oauth_consumer_secret'] == '' || $oauth_settings_results[0]['bbp_tweet_oauth_access_token'] == '' || $oauth_settings_results[0]['bbp_tweet_oauth_access_token_secret'] == '') { ?>
 <!-- ####### // OATH WARNING ####### -->
         <div class="alert alert-danger fade in" role="alert">
             <h4><span class="glyphicon glyphicon-exclamation-sign"></span> Authentication Error</h4>
@@ -151,7 +172,7 @@
                 <a href="#" aria-controls="accounts" role="tab"  data-toggle="dropdown" class="dropdown-toggle"><span class="glyphicon glyphicon-user"></span> Accounts</a>
                 <ul class="dropdown-menu">
                     <?php
-                        foreach ($oauth_settings as $key => $value ) {
+                        foreach ($oauth_settings_results as $key => $value ) {
                     ?>
                         <li class="disabled"><a href="#">@<?php echo $value['bbp_tweet_oauth_account_name']; ?></a></li>
                     <?php
@@ -256,7 +277,7 @@
 
                                 <tbody>
 
-                                    <?php foreach ( $oauth_settings as $key => $value ) { ?>
+                                    <?php foreach ( $oauth_settings_results as $key => $value ) { ?>
 
                                         <tr>
                                             <td>
@@ -265,7 +286,7 @@
                                             <td>
                                                 <a href="https://twitter.com/<?php echo $value['bbp_tweet_oauth_account_name']; ?>" target="_BLANK">@<?php echo $value['bbp_tweet_oauth_account_name']; ?></a>
                                             <td>
-                                                <form name="oauth_delete_account" id="oauth_delete_account">
+                                                <form name="oauth_delete_account" action="" method="post" id="oauth_delete_account">
                                                     <input type="hidden" name="delete_account_id" value="<?php echo $value['bbp_tweet_oauth_settings_id']; ?>" />
                                                     <button class="btn btn-danger btn-xs" type="submit">Delete</button>
                                                 </form>
@@ -308,7 +329,7 @@
                         <div class="col-md-12">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-addon" style="min-width: 150px;">Consumer key: </span>
-                                <input type="text" class="form-control" name="bbp_tweet_oauth_consumer_key" id="bbp_tweet_oauth_consumer_key" placeholder="" style="width: 400px;">
+                                <input type="text" class="form-control" name="bbp_tweet_oauth_consumer_key" id="bbp_tweet_oauth_consumer_key" placeholder="" required="required" style="width: 400px;">
                             </div>
                             <br />
                         </div>
@@ -316,7 +337,7 @@
                         <div class="col-md-12">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-addon" style="min-width: 150px;">Consumer secret: </span>
-                                <input type="text" class="form-control" name="bbp_tweet_oauth_consumer_secret" id="bbp_tweet_oauth_consumer_secret" placeholder="" style="width: 400px;">
+                                <input type="text" class="form-control" name="bbp_tweet_oauth_consumer_secret" id="bbp_tweet_oauth_consumer_secret" placeholder="" required="required" style="width: 400px;">
                             </div>
                             <br />
                         </div>
@@ -324,7 +345,7 @@
                         <div class="col-md-12">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-addon" style="min-width: 150px;">Access token: </span>
-                                <input type="text" class="form-control" name="bbp_tweet_oauth_access_token" id="bbp_tweet_oauth_access_token" placeholder="" style="width: 400px;">
+                                <input type="text" class="form-control" name="bbp_tweet_oauth_access_token" id="bbp_tweet_oauth_access_token" placeholder="" required="required" style="width: 400px;">
                             </div>
                             <br />
                         </div>
@@ -332,7 +353,7 @@
                         <div class="col-md-12">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-addon" style="min-width: 150px;">Access token secret: </span>
-                                <input type="text" class="form-control" name="bbp_tweet_oauth_access_token_secret" id="bbp_tweet_oauth_access_token_secret" placeholder="" style="width: 400px;">
+                                <input type="text" class="form-control" name="bbp_tweet_oauth_access_token_secret" id="bbp_tweet_oauth_access_token_secret" placeholder="" required="required" style="width: 400px;">
                             </div>
                             <br />
                         </div>
