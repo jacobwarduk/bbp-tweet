@@ -2,16 +2,83 @@
 
     global $wpdb;
 
+    include_once( plugins_url( 'functions/twitter-api.php', __FILE__ ) );
+
     $oauth_settings_table = $wpdb->prefix . 'bbp_tweet_oauth_settings';
     $forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
 
+    // Saving new OAuth account
+    if ( $_POST['oauth-save-settings'] == true ) {
+
+        $bbp_tweet_oauth_consumer_key = stripslashes( filter_var( $_POST['bbp_tweet_oauth_consumer_key'], FILTER_SANITIZE_STRING ) );
+        $bbp_tweet_oauth_consumer_secret = stripslashes( filter_var( $_POST['bbp_tweet_oauth_consumer_secret'], FILTER_SANITIZE_STRING ) );
+        $bbp_tweet_oauth_access_token = stripslashes( filter_var( $_POST['bbp_tweet_oauth_access_token'], FILTER_SANITIZE_STRING ) );
+        $bbp_tweet_oauth_access_token_secret = stripslashes( filter_var( $_POST['bbp_tweet_oauth_access_token_secret'], FILTER_SANITIZE_STRING ) );
+
+
+        // Adding oAuth credentials
+        $settings = array(
+            'oauth_access_token' => $bbp_tweet_oauth_access_token,
+            'oauth_access_token_secret' => $bbp_tweet_oauth_access_token_secret,
+            'consumer_key' => $bbp_tweet_oauth_consumer_key,
+            'consumer_secret' => $bbp_tweet_oauth_consumer_secret,
+        );
+
+
+        $url = 'https://api.twitter.com/1.1/account/settings.json';
+
+        $request_method = 'GET';
+        $twitter = new TwitterAPIExchange( $settings );
+
+        $tweets = $twitter->buildOauth( $url, $request_method )->performRequest();
+
+        $account_data = json_decode( $tweets ) ;
+
+        $bpp_tweet_oauth_account_name = $account_data->screen_name;  // GET ACCOUNT NAME FROM https://api.twitter.com/1.1/account/settings.json
+
+
+        if ( isset( $bpp_tweet_oauth_account_name ) && $bbp_tweet_oauth_account_name != '' ) {
+            $wpdb->insert(
+                $oauth_settings_table,
+                array(
+                    'bbp_tweet_oauth_account_name' => $bpp_tweet_oauth_account_name,
+                    'bbp_tweet_oauth_consumer_key' => $bbp_tweet_oauth_consumer_key,
+                    'bbp_tweet_oauth_consumer_secret' => $bbp_tweet_oauth_consumer_secret,
+                    'bbp_tweet_oauth_access_token' => $bbp_tweet_oauth_access_token,
+                    'bbp_tweet_oauth_access_token_secret' => $bbp_tweet_oauth_access_token_secret
+                ),
+                '%s'
+            );
+
+            if ( $wpdb->insert_id !== false ) {
+                $success = true;
+                $message = 'Successfully saved your oAuth credentials';
+            } else {
+                $success = false;
+                $message = 'There was an error saving your oAuth details. Please Try again.';
+            }
+
+        } else {
+            $success = false;
+            $error = 'There was an error retrieving your account details. Please Try again.';
+        }
+
+    }
+
 
     // Saving new topics and replies settings
-    if ( $_POST['bbp-tweet-save-settings'] == 1 ) {
+    if ( $_POST['bbp-tweet-save-settings'] == true ) {
 
         $wpdb->query( "TRUNCATE TABLE $forum_settings_table" );
 
-        $bbp_tweet_settings_insert = $wpdb->insert( $forum_settings_table, array( 'bbp_tweet_forum_settings_topics' => $_POST['bbp-tweet-topics'], 'bbp_tweet_forum_settings_replies' => $_POST['bbp-tweet-replies'] ), array( '%d' ) );
+        $bbp_tweet_settings_insert = $wpdb->insert(
+            $forum_settings_table,
+            array(
+                'bbp_tweet_forum_settings_topics' => $_POST['bbp-tweet-topics'],
+                'bbp_tweet_forum_settings_replies' => $_POST['bbp-tweet-replies']
+            ),
+            '%d'
+        );
 
         if ( $bbp_tweet_settings_insert != false ) {
             $success = true;
@@ -78,9 +145,7 @@
 <!-- ####### TOP NAVIGATION ####### -->
         <ul class="nav nav-tabs" role="tablist">
 
-            <li role="presentation" class="active"><a href="#dashboard" aria-controls="dashboard" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-th-list"></span> Dashboard</a></li>
-
-            <li role="settings"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> Settings</a></li>
+            <li role="settings" class="active"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> Settings</a></li>
 
             <li class="dropdown">
                 <a href="#" aria-controls="accounts" role="tab"  data-toggle="dropdown" class="dropdown-toggle"><span class="glyphicon glyphicon-user"></span> Accounts</a>
@@ -93,7 +158,7 @@
                         }
                     ?>
                     <li class="divider"></li>
-                    <li><a href="#" data-toggle="modal" data-target="#oAuthSettingsModal">Add account</a></li>
+                    <li><a href="#" data-toggle="modal" data-target="#oAuthSettingsModal">Add Account</a></li>
                     <li><a href="#accounts" aria-controls="accounts" role="tab" data-toggle="tab">Manage Accounts</a></li>
                 </ul>
             </li>
@@ -104,39 +169,8 @@
 <!-- ####### TABBED PANELS ####### -->
         <div class="tab-content">
 
-<!-- ####### DASHBOARD PANEL ####### -->
-            <div role="tabpanel" class="tab-pane active" id="dashboard">
-<br />
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-tasks"></span> Activity</span></div>
-
-                            <p style="padding: 10px;">Possible future extension?</p>
-
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-stats"></span> Stats</span></div>
-
-                            <p style="padding: 10px;">Possible future extension?</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-<!-- ####### // DASHBOARD PANEL ####### -->
-
-
-
-
-            <div role="tabpanel" class="tab-pane" id="settings">
+            <div role="tabpanel" class="tab-pane active" id="settings">
 <br />
                 <form name="bbp-tweet-settings" action="" method="post" id="bbp-tweet-settings">
 
@@ -145,17 +179,20 @@
                             <div class="panel panel-default">
                                 <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-edit"></span> Topics</span></div>
 
-                                <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
 
-                                    <div class="checkbox">
-                                        <label for="bbp-tweet-topics">
-                                            <span class="col-md-1"><input type="checkbox" name="bbp-tweet-topics" id="bbp-tweet-topics" value="1" <?php if ( $bbp_tweet_topics == 1 ) { echo 'checked="checked"'; } ?> /></span>
-                                            <span class="col-md-11">Tweet New Topics?</span>
-                                        </label>
+                                            <div class="checkbox">
+                                                <label for="bbp-tweet-topics">
+                                                    <span class="col-md-1"><input type="checkbox" name="bbp-tweet-topics" id="bbp-tweet-topics" value="1" <?php if ( $bbp_tweet_topics == 1 ) { echo 'checked="checked"'; } ?> /></span>
+                                                    <span class="col-md-11">Tweet New Topics?</span>
+                                                </label>
+                                            </div>
+
+                                        </div>
                                     </div>
-
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -165,15 +202,19 @@
                             <div class="panel panel-default">
                                 <div class="panel-heading"><span class="stats"><span class="glyphicon glyphicon-comment"></span> Replies</span></div>
 
-                                <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
 
-                                    <div class="checkbox">
-                                        <label for="bbp-tweet-replies">
-                                            <span class="col-md-1"><input type="checkbox" name="bbp-tweet-replies" id="bbp-tweet-replies" value="1" <?php if ( $bbp_tweet_replies == 1 ) { echo 'checked="checked"'; } ?> /></span>
-                                            <span class="col-md-11">Tweet New Replies?</span>
-                                        </label>
+                                            <div class="checkbox">
+                                                <label for="bbp-tweet-replies">
+                                                    <span class="col-md-1"><input type="checkbox" name="bbp-tweet-replies" id="bbp-tweet-replies" value="1" <?php if ( $bbp_tweet_replies == 1 ) { echo 'checked="checked"'; } ?> /></span>
+                                                    <span class="col-md-11">Tweet New Replies?</span>
+                                                </label>
+                                            </div>
+
+                                        </div>
                                     </div>
-
                                 </div>
 
                             </div>
@@ -182,11 +223,11 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <button type="submit" name="settings-save-button" id="settings-save-button" class="btn btn-success col-md-1 col-md-offset-11">Save</button>
+                            <button type="submit" name="settings-save-button" id="settings-save-button" class="btn btn-primary col-md-1 col-md-offset-11">Save</button>
                         </div>
                     </div>
 
-                    <input type="hidden" name="bbp-tweet-save-settings" value="1" />
+                    <input type="hidden" name="bbp-tweet-save-settings" value="true" />
 
                 </form>
             </div>
@@ -253,7 +294,7 @@
 
 
 <!-- ####### OATH SETTINGS MODAL CONTENT ####### -->
-<form name="oauth_settings_form" id="oauth_settings_form">
+<form name="oauth_settings_form" action="" method="post" id="oauth_settings_form">
     <div class="modal fade" id="oAuthSettingsModal" tabindex="-1" role="dialog" aria-labelledby="oAuthSettingsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -296,10 +337,6 @@
                             <br />
                         </div>
 
-
-                        <div class="col-md-10">
-                            <input type="hidden" name="oauth_settings_form_submit" value="true" />
-                        </div>
                         <div class="col-md-2">
                             <button type="submit" id="oauth-save-button"  class="btn btn-primary">Save</button>
                         </div>
@@ -310,6 +347,8 @@
             </div>
         </div>
     </div>
+
+    <input type="hidden" name="oauth-save-settings" value="true" />
 </form>
 <!-- ####### // OATH SETTINGS MODAL CONTENT ####### -->
 
