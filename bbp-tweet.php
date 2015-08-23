@@ -2,7 +2,7 @@
 
 /*
     Plugin Name: bbp tweet
-    Description: bbPress plugin to tweet new topics and replies. Full stats reporting, including tweets, retweets, favorites and tweet to bbp CTR.
+    Description: bbPress plugin to tweet new topics and replies.
     Author: Jacob Ward
     Version: 1.0.0
     Author URI: http://www.jacobward.co.uk
@@ -115,27 +115,27 @@ function on_activation() {
         dbDelta($sql_query);
     }
 }
-
-
-add_action( 'bbp_new_topic', 'tweet_new_topic' );   // Tweeting new topic
-add_action( 'bbp_new_reply', 'tweet_new_reply' );   // Tweeting new reply
-
-// Function for tweeting new topics
-function tweet_new_topic( $topic_id, $forum_id, $anonymous_data, $topic_author ) {
-
-    global $wpdb;
-
-    require_once( 'functions/twitter-api.php' );
-    require_once( 'functions/bbp-tweet-chirp.php' );
-
-}
-
-// Function for tweeting new replies
-function tweet_new_reply( $reply_id, $topic_id, $forum_id, $anonymous_data, $reply_author ) {
-
-    global $wpdb;
-
-    require_once( 'functions/twitter-api.php' );
-    require_once( 'functions/bbp-tweet-chirp.php' );
-
-}
+//
+//
+// add_action( 'bbp_new_topic', 'tweet_new_topic' );   // Tweeting new topic
+// add_action( 'bbp_new_reply', 'tweet_new_reply' );   // Tweeting new reply
+//
+// // Function for tweeting new topics
+// function tweet_new_topic( $topic_id, $forum_id, $anonymous_data, $topic_author ) {
+//
+//     global $wpdb;
+//
+//     require_once( 'functions/twitter-api.php' );
+//     require_once( 'functions/bbp-tweet-chirp.php' );
+//
+// }
+//
+// // Function for tweeting new replies
+// function tweet_new_reply( $reply_id, $topic_id, $forum_id, $anonymous_data, $reply_author ) {
+//
+//     global $wpdb;
+//
+//     require_once( 'functions/twitter-api.php' );
+//     require_once( 'functions/bbp-tweet-chirp.php' );
+//
+// }

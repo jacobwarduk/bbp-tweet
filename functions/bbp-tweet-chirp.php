@@ -40,34 +40,44 @@
     $oauth_settings_table = $wpdb->prefix . 'bbp_tweet_oauth_settings';
     $forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
 
-    $oauth_settings = $wpdb->get_results( "SELECT * FROM $oauth_settings_table", ARRAY_A );
-    $bbp_tweet_topics = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_topics` FROM $forum_settings_table", ARRAY_A );
-    $bbp_tweet_replies = $wpdb->get_results( "SELECT `bbp_tweet_forum_settings_replies` FROM $forum_settings_table", ARRAY_A );
+    $oauth_settings_results = $wpdb->get_results( "SELECT * FROM $oauth_settings_table", ARRAY_A );
+    $bbp_tweet_topics_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_topics FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
+    $bbp_tweet_replies_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_replies FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
+
+    $oauth_settings = $oauth_settings_results[0];
+    $bbp_tweet_topics = $bbp_tweet_topics_results[0]['bbp_tweet_forum_settings_topics'];
+    $bbp_tweet_replies = $bbp_tweet_replies_results[0]['bbp_tweet_forum_settings_replies'];
+
+
+    print_r( get_defined_vars() );
+
 
     // Tweet new topic
-    if ( ! $reply_id || $reply_id == '' || $reply_id == false ) {
-
-        if ( $bbp_tweet_topics == true ) {
-
-            $topic_title = html_entity_decode( strip_tags( bbp_get_topic_title( $topic_id ) ), ENT_NOQUOTES, 'UTF-8' );
-            $topic_url = bbp_get_topic_permalink( $topic_id );
-
-            $message = 'New Topic: ' . $topic_title . ' ' . $topic_url;
-            $outh = create_oauth_array( $oauth_settings );
-            $tweeted = create_tweet( $outh, $message );
-
-        }
-
-    } else {    // Tweet new reply
-
-            $topic_title = html_entity_decode( strip_tags( bbp_get_topic_title( $topic_id ) ), ENT_NOQUOTES, 'UTF-8' );
-            $topic_author = bbp_get_topic_author( $topic_id );
-            $topic_url = bbp_get_topic_permalink( $topic_id );
-
-            $message = 'New Reply to ' . $topic_title . ' by ' . $topic_author . ' ' . $topic_url;
-            $outh = create_oauth_array( $oauth_settings );
-            $tweeted = create_tweet( $outh, $message );
-
-        }
-
-    }
+    // if ( ! $reply_id || $reply_id == '' || $reply_id == false ) {
+    //
+    //     if ( $bbp_tweet_topics == true ) {
+    //
+    //         $topic_title = html_entity_decode( strip_tags( bbp_get_topic_title( $topic_id ) ), ENT_NOQUOTES, 'UTF-8' );
+    //         $topic_url = bbp_get_topic_permalink( $topic_id );
+    //
+    //         $message = 'New Topic: ' . $topic_title . ' ' . $topic_url;
+    //         $outh = create_oauth_array( $oauth_settings );
+    //         $tweeted = create_tweet( $outh, $message );
+    //
+    //     }
+    //
+    // } else {    // Tweet new reply
+    //
+    //     if ( $bbp_tweet_replies == true ) {
+    //
+    //         $topic_title = html_entity_decode( strip_tags( bbp_get_topic_title( $topic_id ) ), ENT_NOQUOTES, 'UTF-8' );
+    //         $topic_author = bbp_get_topic_author( $topic_id );
+    //         $topic_url = bbp_get_topic_permalink( $topic_id );
+    //
+    //         $message = 'New Reply to ' . $topic_title . ' by ' . $topic_author . ' ' . $topic_url;
+    //         $outh = create_oauth_array( $oauth_settings );
+    //         $tweeted = create_tweet( $outh, $message );
+    //
+    //     }
+    //
+    // }

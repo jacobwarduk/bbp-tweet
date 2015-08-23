@@ -113,7 +113,6 @@
     $bbp_tweet_topics_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_topics FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
     $bbp_tweet_replies_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_replies FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
 
-    // var_dump( $oauth_settings_results );
     $bbp_tweet_topics = $bbp_tweet_topics_results[0]['bbp_tweet_forum_settings_topics'];
     $bbp_tweet_replies = $bbp_tweet_replies_results[0]['bbp_tweet_forum_settings_replies'];
 
@@ -179,7 +178,11 @@
                         }
                     ?>
                     <li class="divider"></li>
+
+                    <?php if ( $oauth_settings_results[0]['bbp_tweet_oauth_account_name'] == false ) { ?>
                     <li><a href="#" data-toggle="modal" data-target="#oAuthSettingsModal">Add Account</a></li>
+                    <?php } ?>
+
                     <li><a href="#accounts" aria-controls="accounts" role="tab" data-toggle="tab">Manage Accounts</a></li>
                 </ul>
             </li>
