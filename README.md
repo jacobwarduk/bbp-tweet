@@ -1,5 +1,4 @@
-# [WIP] bbp tweet
-**[Work In Progress]**
+# bbp tweet
 
 bbPress plugin to automatically tweet new topics and replies.
 

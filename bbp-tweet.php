@@ -2,13 +2,15 @@
 
 /*
     Plugin Name: bbp tweet
-    Description: bbPress plugin to tweet new topics and replies.
+    Description: bbPress plugin to automatically tweet new topics and replies.
     Author: Jacob Ward
     Version: 1.0.0
     Author URI: http://www.jacobward.co.uk
     Plugin URI: http://www.jacobward.co.uk/bbp-tweet/
 */
 
+$bbp_tweet_version = '1.0.0'
+update_option('bbp_tweet_version', $bbp_tweet_version);
 
 global $wpdb;
 require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -116,27 +118,16 @@ function bbp_tweet_on_activation() {
     }
 }
 
-// Function for creating an array of the oauth data
-function bbp_tweet_create_oauth_array( $oauth ) {
-
-    $settings = array(
-        'oauth_access_token' => $oauth['bbp_tweet_oauth_access_token'],
-        'oauth_access_token_secret' => $oauth['bbp_tweet_oauth_access_token_secret'],
-        'oauth_consumer_key' => $oauth['bbp_tweet_oauth_consumer_key'],
-        'oauth_consumer_secret' => $oauth['bbp_tweet_oauth_consumer_secret']
-    );
-
-    return $settings;
-
-}
 
 // Function for creating a new tweet
 function bbp_tweet_create_tweet( $oauth, $message ) {
 
+    require_once( 'functions/twitter-api.php' ); // Including Twitter API wrapper
+
     // Retweeting the tweet - https://dev.twitter.com/rest/reference/post/statuses/update
     $tweet_url = 'https://api.twitter.com/1.1/statuses/update.json';
     $post_fields = array(
-        'status' => $message;
+        'status' => $message
     );
     $request_method = 'POST';
 
@@ -144,7 +135,6 @@ function bbp_tweet_create_tweet( $oauth, $message ) {
     $response =  $twitter->buildOauth( $tweet_url, $request_method )
     ->setPostfields( $post_fields )
     ->performRequest();
-    var_dump( json_decode( $response ) );
 
 }
 
@@ -157,13 +147,19 @@ function bbp_tweet_chirp( $message ) {
 
     $oauth_settings_results = $wpdb->get_results( "SELECT * FROM $oauth_settings_table", ARRAY_A );
     $bbp_tweet_topics_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_topics FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
-    $bbp_tweet_replies_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_replies FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
 
-    $oauth_settings = $oauth_settings_results[0];
-    $bbp_tweet_topics = $bbp_tweet_topics_results[0]['bbp_tweet_forum_settings_topics'];
-    $bbp_tweet_replies = $bbp_tweet_replies_results[0]['bbp_tweet_forum_settings_replies'];
 
-    $oauth = bbp_tweet_create_oauth_array( $oauth_settings );
+    $bbp_tweet_oauth_consumer_key = stripslashes( filter_var( $oauth_settings_results[0]['bbp_tweet_oauth_consumer_key'], FILTER_SANITIZE_STRING ) );
+    $bbp_tweet_oauth_consumer_secret = stripslashes( filter_var( $oauth_settings_results[0]['bbp_tweet_oauth_consumer_secret'], FILTER_SANITIZE_STRING ) );
+    $bbp_tweet_oauth_access_token = stripslashes( filter_var( $oauth_settings_results[0]['bbp_tweet_oauth_access_token'], FILTER_SANITIZE_STRING ) );
+    $bbp_tweet_oauth_access_token_secret = stripslashes( filter_var( $oauth_settings_results[0]['bbp_tweet_oauth_access_token_secret'], FILTER_SANITIZE_STRING ) );
+
+    $oauth = array(
+        'oauth_access_token' => $bbp_tweet_oauth_access_token,
+        'oauth_access_token_secret' => $bbp_tweet_oauth_access_token_secret,
+        'consumer_key' => $bbp_tweet_oauth_consumer_key,
+        'consumer_secret' => $bbp_tweet_oauth_consumer_secret,
+    );
 
     $bbp_tweet_create_tweet = bbp_tweet_create_tweet( $oauth, $message );
 
@@ -176,7 +172,15 @@ add_action( 'bbp_new_reply', 'bbp_tweet_new_reply' );   // Tweeting new reply
 // Function for tweeting new topics
 function bbp_tweet_new_topic( $topic_id, $forum_id, $anonymous_data, $topic_author ) {
 
-        global $wpdb;
+    global $wpdb;
+
+    $forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
+
+    $bbp_tweet_topics_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_topics FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
+
+    $bbp_tweet_topics = $bbp_tweet_topics_results[0]['bbp_tweet_forum_settings_topics'];
+
+    if ( $bbp_tweet_topics == true ) {
 
         $topic_title = html_entity_decode( strip_tags( bbp_get_topic_title( $topic_id ) ), ENT_NOQUOTES, 'UTF-8' );
         $topic_url = bbp_get_topic_permalink( $topic_id );
@@ -184,13 +188,22 @@ function bbp_tweet_new_topic( $topic_id, $forum_id, $anonymous_data, $topic_auth
         $message = 'New Topic: ' . $topic_title . ' ' . $topic_url;
 
         $bbp_tweet_topic_tweeted = bbp_tweet_chirp( $message );
+    }
 
 }
 
 // Function for tweeting new replies
 function bbp_tweet_new_reply( $reply_id, $topic_id, $forum_id, $anonymous_data, $reply_author ) {
 
-        global $wpdb;
+    global $wpdb;
+
+    $forum_settings_table = $wpdb->prefix . 'bbp_tweet_forum_settings';
+
+    $bbp_tweet_replies_results = $wpdb->get_results( "SELECT bbp_tweet_forum_settings_replies FROM $forum_settings_table WHERE bbp_tweet_forum_settings_id = 1", ARRAY_A );
+
+    $bbp_tweet_replies = $bbp_tweet_replies_results[0]['bbp_tweet_forum_settings_replies'];
+
+    if ( $bbp_tweet_replies == true ) {
 
         $topic_title = html_entity_decode( strip_tags( bbp_get_topic_title( $topic_id ) ), ENT_NOQUOTES, 'UTF-8' );
         $topic_author = bbp_get_topic_author( $topic_id );
@@ -199,5 +212,6 @@ function bbp_tweet_new_reply( $reply_id, $topic_id, $forum_id, $anonymous_data, 
         $message = 'New Reply to ' . $topic_title . ' by ' . $topic_author . ' ' . $topic_url;
 
         $bbp_tweet_reply_tweeted = bbp_tweet_chirp( $message );
+    }
 
 }
