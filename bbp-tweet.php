@@ -9,7 +9,7 @@
     Plugin URI: http://www.jacobward.co.uk/bbp-tweet/
 */
 
-$bbp_tweet_version = '1.0.0'
+$bbp_tweet_version = '1.0.0';
 update_option('bbp_tweet_version', $bbp_tweet_version);
 
 global $wpdb;
