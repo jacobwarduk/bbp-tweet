@@ -33,9 +33,6 @@ Alternatively
 4. Follow instructions on screen.
 4. Look for the 'bbp tweet' menu option in the WordPress dashboard to change settings.
 
-== Frequently Asked Questions ==
-
-== Screenshots ==
 
 == Changelog ==
 
