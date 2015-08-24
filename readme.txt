@@ -1,6 +1,6 @@
 === Plugin Name ===
 Contributors: jacobwarduk
-Donate link: http://www.jacobward.co.uk/bbp-tweet/
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3DUNKX3GA8ZU2&lc=GB&item_name=Jacob%20Ward&item_number=bbp%2dtweet&currency_code=GBP&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
 Tags: bbpress, bbp, twitter, tweet, automation, bbp-tweet
 Requires at least: 3.0.1
 Tested up to: 4.3
