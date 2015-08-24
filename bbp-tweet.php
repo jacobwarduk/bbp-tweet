@@ -67,10 +67,10 @@ function bbp_tweet_admin_init() {
 
 
 // Registering activation hook
-register_activation_hook(__FILE__, 'on_activation');
+register_activation_hook(__FILE__, 'bbp_tweet_on_activation');
 
 // Function for creating database tables
-function on_activation() {
+function bbp_tweet_on_activation() {
 
     if ( ! class_exists( 'bbPress' ) ) {
 		deactivate_plugins( plugin_basename( __FILE__ ) );
