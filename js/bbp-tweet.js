@@ -1,4 +1,3 @@
-
 // Saving OAuth credentials
 jQuery(document).ready(function() {
     jQuery('#oauth-save-button').on('click', function(e) {
@@ -7,7 +6,7 @@ jQuery(document).ready(function() {
 
         jQuery.ajax({
             type: 'POST',
-            url: '../wp-content/plugins/hashtag-wizard/functions/submit.php',
+            url: bbp_tweet_ajax_urls.save_oauth,
             data: jQuery('#oauth_settings_form').serialize()
         })
         .done(function() {

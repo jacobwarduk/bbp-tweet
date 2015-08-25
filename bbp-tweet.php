@@ -59,11 +59,14 @@ function bbp_tweet_admin_init() {
     wp_register_script( 'bbp_tweet_bootstap_select_javascript', plugins_url( 'js/bootstrap-select.min.js', __FILE__) );
     wp_register_script( 'bbp_tweet_javascript', plugins_url( 'js/bbp-tweet.js', __FILE__) );
 
+    wp_enqueue_script( 'jquery' );
     wp_enqueue_script( 'bbp_tweet_bootstap_javascript' );
     wp_enqueue_script( 'bbp_tweet_bootstap_select_javascript' );
     wp_enqueue_script( 'bbp_tweet_javascript' );
-    wp_enqueue_script( 'jquery' );
 
+    wp_localize_script( 'bbp_tweet_javascript', 'bbp_tweet_ajax_urls', array(
+        'save_oauth' => plugins_url( 'functions/submit.php', __FILE__ ), 
+    ) );
 
 }
 
