@@ -32,17 +32,27 @@ function oauth_instructions() {
 
 // Function to create menu links
 function bbp_tweet_menu_actions() {
-    add_menu_page( 'bbp tweet', 'bbp tweet', 1, 'bbp_tweet_settings_page', 'bbp_tweet_settings' );
 
+    global $bbp_tweet_menu_page;
+	$bbp_tweet_menu_page = add_menu_page( 'bbp tweet', 'bbp tweet', 1, 'bbp_tweet_settings_page', 'bbp_tweet_settings' );
+
+    global $bbp_tweet_oauth_instructions_page;
     add_submenu_page( 'oauth-instructions.php', 'Twitter oAuth Instructions', 'Twitter oAuth Instructions', 'manage_options', 'oauth_instructions_page', 'oauth_instructions' );
+
 }
 
 
 
 
-add_action( 'admin_init', 'bbp_tweet_admin_init' );
+add_action( 'admin_enqueue_scripts', 'bbp_tweet_admin_init' );
 
-function bbp_tweet_admin_init() {
+function bbp_tweet_admin_init( $hook ) {
+
+    global $bbp_tweet_menu_page;
+
+    if ( 'bbp-tweet-admin.php' != $bbp_tweet_menu_page ) {
+        return;
+    }
 
     wp_register_style( 'bbp_tweet_bootstrap_main_stylesheet', plugins_url( 'css/bootstrap.min.css', __FILE__) );
     wp_register_style( 'bbp_tweet_bootstrap_theme_stylesheet', plugins_url( 'css/bootstrap-theme.min.css', __FILE__) );
